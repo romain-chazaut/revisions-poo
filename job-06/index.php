@@ -7,11 +7,12 @@ include 'Category.php';
 $db = new Database();
 $pdo = $db->connect();
 
-$query = "SELECT * FROM product WHERE id = 7";
+// Récupération d'un produit spécifique
+$query = "SELECT * FROM product WHERE id = 5";
 $stmt = $pdo->query($query);
 
 if ($productData = $stmt->fetch()) {
-    $photos = json_decode($productData['photos'], true) ?: []; // Assurez-vous que cela correspond à la structure de votre base de données
+    $photos = json_decode($productData['photos'], true) ?: []; 
     $product = new Product(
         $productData['id'],
         $productData['name'],
@@ -29,6 +30,15 @@ if ($productData = $stmt->fetch()) {
     echo "<p>Description : " . $product->getDescription() . "</p>";
     echo "<p>Prix : " . $product->getPrice() . "</p>";
     echo "<p>Catégorie : " . ($category ? $category->getName() : "Non trouvée") . "</p>";
+
+    // Récupération des produits de la catégorie du produit
+    if ($category) {
+        $products = $category->getProducts($pdo);
+        echo "<h2>Autres produits dans la catégorie '" . $category->getName() . "':</h2>";
+        foreach ($products as $prod) {
+            echo "<p>" . $prod->getName() . "</p>";
+        }
+    }
 } else {
     echo "Produit non trouvé.";
 }
