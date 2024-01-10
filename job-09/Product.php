@@ -52,7 +52,77 @@ class Product {
         }
     }
 
-    
+    public static function findOneById(PDO $pdo, int $id): ?Product {
+        $query = "SELECT * FROM product WHERE id = :id";
+        $stmt = $pdo->prepare($query);
+        $stmt->execute(['id' => $id]);
+
+        $productData = $stmt->fetch();
+        if ($productData) {
+            return new Product(
+                $productData['id'],
+                $productData['name'],
+                json_decode($productData['photos'], true) ?: [],
+                $productData['price'],
+                $productData['description'],
+                $productData['quantity'],
+                new DateTime($productData['created_at']),
+                new DateTime($productData['updated_at']),
+                $productData['category_id']
+            );
+        } else {
+            return null;
+        }
+    }
+
+    public static function findAll(PDO $pdo): array {
+        $query = "SELECT * FROM product";
+        $stmt = $pdo->query($query);
+
+        $products = [];
+        while ($productData = $stmt->fetch()) {
+            $products[] = new Product(
+                $productData['id'],
+                $productData['name'],
+                json_decode($productData['photos'], true) ?: [],
+                $productData['price'],
+                $productData['description'],
+                $productData['quantity'],
+                new DateTime($productData['created_at']),
+                new DateTime($productData['updated_at']),
+                $productData['category_id']
+            );
+        }
+
+        return $products;
+    }
+
+    public function create(PDO $pdo) {
+        $query = "INSERT INTO product (name, photos, price, description, quantity, created_at, updated_at, category_id) VALUES (:name, :photos, :price, :description, :quantity, :created_at, :updated_at, :category_id)";
+        $stmt = $pdo->prepare($query);
+
+        $photosJson = json_encode($this->photos);
+        $created_at = $this->createdAt->format('Y-m-d H:i:s');
+        $updated_at = $this->updatedAt->format('Y-m-d H:i:s');
+
+        $stmt->bindParam(':name', $this->name);
+        $stmt->bindParam(':photos', $photosJson);
+        $stmt->bindParam(':price', $this->price);
+        $stmt->bindParam(':description', $this->description);
+        $stmt->bindParam(':quantity', $this->quantity);
+        $stmt->bindParam(':created_at', $created_at);
+        $stmt->bindParam(':updated_at', $updated_at);
+        $stmt->bindParam(':category_id', $this->category_id);
+
+        $success = $stmt->execute();
+
+        if ($success) {
+            $this->id = $pdo->lastInsertId();
+            return $this;
+        } else {
+            return false;
+        }
+    }
 
     
 

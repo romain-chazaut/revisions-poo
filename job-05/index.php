@@ -7,7 +7,7 @@ include 'Category.php';
 $db = new Database();
 $pdo = $db->connect();
 
-$query = "SELECT * FROM product WHERE id = 7";
+$query = "SELECT * FROM product WHERE id = 23";
 $stmt = $pdo->query($query);
 
 if ($productData = $stmt->fetch()) {

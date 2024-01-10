@@ -7,31 +7,20 @@ include 'Category.php';
 $db = new Database();
 $pdo = $db->connect();
 
-// Récupération d'un produit spécifique
-$query = "SELECT * FROM product WHERE id = 7";
-$stmt = $pdo->query($query);
+// Récupération d'un produit spécifique en utilisant findOneById
+$product = Product::findOneById($pdo, 22);
 
-if ($productData = $stmt->fetch()) {
-    $photos = json_decode($productData['photos'], true) ?: []; 
-    $product = new Product(
-        $productData['id'],
-        $productData['name'],
-        $photos,
-        $productData['price'],
-        $productData['description'],
-        $productData['quantity'],
-        new DateTime($productData['created_at']),
-        new DateTime($productData['updated_at']),
-        $productData['category_id']
-    );
-
-    $category = $product->getCategory($pdo);
+if ($product) {
+    // Affichage des informations du produit
     echo "<h1>Produit : " . $product->getName() . "</h1>";
     echo "<p>Description : " . $product->getDescription() . "</p>";
     echo "<p>Prix : " . $product->getPrice() . "</p>";
+
+    // Récupération et affichage de la catégorie du produit
+    $category = $product->getCategory($pdo);
     echo "<p>Catégorie : " . ($category ? $category->getName() : "Non trouvée") . "</p>";
 
-    // Récupération des produits de la catégorie du produit
+    // Récupération et affichage des autres produits de la même catégorie
     if ($category) {
         $products = $category->getProducts($pdo);
         echo "<h2>Autres produits dans la catégorie '" . $category->getName() . "':</h2>";

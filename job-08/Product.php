@@ -52,7 +52,50 @@ class Product {
         }
     }
 
-    
+    public static function findOneById(PDO $pdo, int $id): ?Product {
+        $query = "SELECT * FROM product WHERE id = :id";
+        $stmt = $pdo->prepare($query);
+        $stmt->execute(['id' => $id]);
+
+        $productData = $stmt->fetch();
+        if ($productData) {
+            return new Product(
+                $productData['id'],
+                $productData['name'],
+                json_decode($productData['photos'], true) ?: [],
+                $productData['price'],
+                $productData['description'],
+                $productData['quantity'],
+                new DateTime($productData['created_at']),
+                new DateTime($productData['updated_at']),
+                $productData['category_id']
+            );
+        } else {
+            return null;
+        }
+    }
+
+    public static function findAll(PDO $pdo): array {
+        $query = "SELECT * FROM product";
+        $stmt = $pdo->query($query);
+
+        $products = [];
+        while ($productData = $stmt->fetch()) {
+            $products[] = new Product(
+                $productData['id'],
+                $productData['name'],
+                json_decode($productData['photos'], true) ?: [],
+                $productData['price'],
+                $productData['description'],
+                $productData['quantity'],
+                new DateTime($productData['created_at']),
+                new DateTime($productData['updated_at']),
+                $productData['category_id']
+            );
+        }
+
+        return $products;
+    }
 
     
 
